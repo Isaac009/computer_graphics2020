@@ -1,12 +1,5 @@
-# 1 - left click
-
-# 2 - middle click
-
-# 3 - right click
-
-# 4 - scroll up
-
-# 5 - scroll down
+# @Author Nicholaus, Isack Thomas
+# ID: 20195032
 
 import pygame
 from sys import exit
@@ -39,7 +32,6 @@ screen.blit(background, (0, 0))
 clock = pygame.time.Clock()
 
 
-# Loop until the user clicks the close button.
 done = False
 while not done:
     # This limits the while loop to a max of 10 times per second.
@@ -52,15 +44,20 @@ while not done:
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1: # Mouse left click
                 circ = pygame.mouse.get_pos() #Gets the mouse position
+                # pygame.draw.circle(screen, color, (x,y), radius, thickness)
                 pygame.draw.circle(screen, BLUE, (circ), 10, 0) #Draws a circle at the mouse position!
             elif event.button == 2: # Mouse Middle Click
                 print("Event: ", event.button)
                 x, y = pygame.mouse.get_pos() #Gets the mouse position 
-                # pygame.draw.circle(screen, color, (x,y), radius, thickness)
-                pygame.draw.rect(screen, RED, (x - 10//2, y-10//2, 10, 10)) #Draws a red rectangle at the mouse position!
+                height = 16
+                width = 16
+                
+                pygame.draw.rect(screen, RED, (x - width//2, y-height//2,  width, height)) #Draws a red rectangle at the mouse position!
             elif event.button == 3: # Mouse Right Click
+                height = 16
+                width = 16
                 x, y = pygame.mouse.get_pos() #Gets the mouse position
-                pygame.draw.rect(screen, BLACK, (x - 16//2, y-16//2, 16, 16)) #Draws a black rectangle at the mouse position!
+                pygame.draw.rect(screen, BLACK, (x - width//2, y-height//2,  width, height)) #Draws a black rectangle at the mouse position!
 
     x, y = pygame.mouse.get_pos()
     cur_pt = np.array([x, y])
