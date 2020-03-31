@@ -47,23 +47,36 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
-        if event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 or event.button == 2 or event.button == 3:
                 if i%2 == 0:
                     x, y = pygame.mouse.get_pos()
                     point1 = np.array([x, y])
                     height = 10
                     width = 10
-                    pygame.draw.rect(screen, DEEP_PINK, (x - width//2, y-height//2,  width, height),3)
+                    if event.button == 1:
+                        pygame.draw.rect(screen, DEEP_PINK, (x - width//2, y-height//2,  width, height),3)
+                    elif event.button == 2:
+                        pygame.draw.rect(screen, BLUE, (x - width//2, y-height//2,  width, height),3)
+                    else:
+                        pygame.draw.rect(screen, WHITE, (x - width//2, y-height//2,  width, height),3)
                 else:
                     x, y = pygame.mouse.get_pos()
                     point2 = np.array([x, y])
                     height = 10
                     width = 10
-                    pygame.draw.rect(screen, DEEP_PINK, (x - width//2, y-height//2,  width, height),3)
+                    if event.button == 1:
+                        pygame.draw.rect(screen, DEEP_PINK, (x - width//2, y-height//2,  width, height),3)
+                    elif event.button == 2:
+                        pygame.draw.rect(screen, BLUE, (x - width//2, y-height//2,  width, height),3)
+                    else:
+                        pygame.draw.rect(screen, WHITE, (x - width//2, y-height//2,  width, height),3)
                 if i > 0:
                     pygame.draw.aaline(screen, GREEN, point1, point2)
                 i += 1
-
+    x, y = pygame.mouse.get_pos()
+    pt = [x, y]
+    pygame.draw.circle(screen, RED, pt, 0)
+    
     pygame.display.update()
 pygame.quit()
