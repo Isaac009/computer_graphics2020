@@ -8,6 +8,8 @@ from sys import exit
 import numpy as np
 import math
     
+
+MAX = 1024
 width = 800
 height = 600
 pygame.init()
@@ -28,15 +30,17 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 GOLD = (178, 151, 0)
 
+T = []
 pts = [] 
 knots = []
 count = 0
+knotcount=0
+idletv=-1
 # screen.blit(background, (0,0))
 screen.fill(WHITE)
 
 # https://kite.com/python/docs/pygame.Surface.blit
 clock= pygame.time.Clock()
-
 
 def drawPoint(pt, color='GREEN', thick=3):
     pygame.draw.circle(screen, color, pt, thick)
@@ -54,7 +58,7 @@ def quadratic_bezier(t):
     # xy = np.dot(np.array([xs,ys]),np.array(pts))
     # print(xy)
     return [x,y]
-
+    
 def cubic_bezier(t):
     x = np.power(1-t, 3) * pts[0][0] + \
         np.power(1-t, 2) * 3 * t* pts[1][0] + \
@@ -64,18 +68,89 @@ def cubic_bezier(t):
         (1 - t) * 3 * t**2 * pts[2][1] + t**3 * pts[3][1]
     return [x,y]
 
-def multi_curves():
-    moveTo(pts[0])
+def multi_curves(t):
+    # moveTo(pts[0])
 
     for i in range(len(pts)-2):
         p0 = pts[i]
         p1 = pts[i+1]
         midx = (p0[0] + p1[0]) / 2
         midy = (p0[1] + p1[1]) / 2
-        quadratic_bezier()
+        quadratic_bezier(t)
     p0 = pts[len(pts)-2]
     p1 = pts[len(pts)-1]
-    quadratic_bezier()
+    quadratic_bezier(t)
+
+def makeknots():
+    XMARGIN, YMARGIN = 25, 25
+    x0=XMARGIN
+    x1=width-XMARGIN
+    x=height-YMARGIN
+    y=height-YMARGIN
+    if(display_mode == BEZIER):
+		knotcount=(count-1)*2
+		for i in range(knotcount//2):
+			T[i]=0 
+			T[knotcount-i-1]=1
+		for i in range(knotcount):
+			TP[i][0]=(T[knotcount-1]-T[i])/(T[knotcount-1]-T[0])*x0
+				+(T[i]-T[0])/(T[knotcount-1]-T[0])*x1
+			TP[i][1]=y
+
+
+def myBSpline():
+	v = []
+
+	# if count<=0 or count > 200:
+    #     return
+	# glColor3f(r, 0., 0.)
+	# glBegin(GL_LINE_STRIP)
+	for i in range(MAX):
+		x=i/MAX*(T[knotcount-poly_deg-1]-T[poly_deg])+T[poly_deg]
+		myBSplineCalculate(v, T, x, count)
+		v[1]=height-v[1]
+		glVertex3dv(v)
+
+	# glEnd()
+
+	tv=idletv*(T[knotcount-poly_deg-1]-T[poly_deg])+T[poly_deg]
+	myBSplineCalculateDisplay(v, T, tv, count)
+
+
+def combi(n, m):
+    total = 1.0
+
+	if(m==0 or m==n): return 1.
+	else if(m<0 or m>n): return 1.
+	for i in range(n, m):
+		total *= i
+	for i in range(n-m, 0, -1):
+		total /= i
+	return total
+
+
+def myBezier():
+	v = []
+
+	# if count<=0 or count > 200:
+    #     return
+	# glColor3f(r, 0., 0.) color
+	# glBegin(GL_LINE_STRIP) Line
+	for i in range(MAX):
+		x = i/MAX
+		myBezierCalculate(v, T, x, count)
+		v[1]=height-v[1]
+		# glVertex3dv(v)
+
+	tv=idletv
+	# myBezierCalculateDisplay(v, T, tv, count)
+
+def myBezierCalculate(v, t, x, size):
+	v = [0.0, 0.0]
+	for i in range(size):
+		l=combi(size-1,i)*math.pow(x, i)*math.pow(1.-x, size-1-i)
+		v[0]+=pts[i][0]*l
+		v[1]+=pts[i][1]*l
 
 def draw_lagrange(color='GREEN', thick=1):
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
@@ -88,7 +163,7 @@ def draw_lagrange(color='GREEN', thick=1):
         # f_x = np.zeros(2, dtype=np.float32)
         # print(quadratic(t))
         # f_x = np.array(quadratic(t),  dtype='f')
-        f_x = np.array(cubic_bezier(t),  dtype='f')
+        f_x = np.array(multi_curves(t),  dtype='f')
         # for i in np.arange(0, len(pts), 1):
         #     num, den = 1, 1
         #     for j in np.arange(0, len(pts), 1):
@@ -120,7 +195,7 @@ old_button1 = 0
 
 while not done:   
     # This limits the while loop to a max of 10 times per second.
-    # Leave this out and we will use all CPU we can.
+    # Leave this out and we will use all ptsU we can.
     time_passed = clock.tick(30)
 
     for event in pygame.event.get():
