@@ -81,8 +81,8 @@ def lagrang(color='RED'):
 def drawPolylines(color='GREEN', thick=2):
     # screen.fill(WHITE)
     if(count < 2): return
-    c_mouse_pos = pygame.mouse.get_pos()
-    lagrang(c_mouse_pos, color)
+    # c_mouse_pos = pygame.mouse.get_pos()
+    lagrang(color)
    
 #Loop until the user clicks the close button.
 done = False

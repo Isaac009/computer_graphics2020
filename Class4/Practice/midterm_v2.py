@@ -67,26 +67,43 @@ def draw_lagrange(color='GREEN', thick=1):
         drawPoint(f_x_sl, color=BLUE, thick=1)
 
 
-def Hermit():
-    moveto (P1);                            # move pen to startpoint
-    for t in np.arange(0, len(pts)-1, 0.01):
-        s = t / steps;    # scale s to go from 0 to 1
-        h1 =  2*math.pow(s,3) - 3*math.pow(s,2) + 1;          # calculate basis function 1
-        h2 = -2*math.pow(s,3) + 3*math.pow(s,2);              # calculate basis function 2
-        h3 =   math.pow(s,3) - 2*math.pow(s,2) + s;         # calculate basis function 3
-        h4 =   math.pow(s,3) -  math.pow(s,2);              # calculate basis function 4
-        p = h1*P1 +  h2*P2 + h3*T1 + h4*T2; # multiply and sum all funtions
-                                        # together to build the interpolated
-                                        # point along the curve.
-                    
-        # lineto (p)                            # draw to calculated point on the curve
-        print(p)
+def Hermit(color='GREEN', thick=1):
+    # moveto (P1)                            # move pen to startpoint
+    pygame.draw.rect(screen, WHITE, (0, 0, width, height))
+    # print('pts = ', pts)
 
-def drawPolylines(color='GREEN', thick=1):
+    for p in range(len(pts)):
+        pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
+    
+    T = []
+    for k in range(len(pts)): 
+        if k > 0 and k < len(pts)-2:
+            print(pts[k+1],pts[k-1])
+            T.append(0.2 * (np.array(pts[k+1]) - np.array(pts[k-1])))
+        else:
+            T.append([0,0])
+            
+    for i in range(len(pts)-1):   
+        for t in np.arange(0, len(pts)-1, 0.01):
+            h1 =  2*math.pow(t,3) - 3*math.pow(t,2) + 1          # calculate batit function 1
+            h2 = -2*math.pow(t,3) + 3*math.pow(t,2)              # calculate batit function 2
+            h3 =   math.pow(t,3) - 2*math.pow(t,2) + t         # calculate batit function 3
+            h4 =   math.pow(t,3) -  math.pow(t,2)              # calculate batis function 4
+            
+            p = np.array(pts[i]) * h1 +  np.array(pts[i+1]) * h2 + np.array(T[i]) * h3 + np.array(T[i+1])*h4
+            drawPoint(p.astype(int), color=RED, thick=1)
+
+            f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+            f_x_sl = f_x_sl.astype(int)
+            drawPoint(f_x_sl, color=BLUE, thick=1)
+
+
+def mode(color='GREEN', thick=1):
     if count < 2:
         return
 
-    draw_lagrange(color, thick)
+    # draw_lagrange(color, thick)
+    Hermit(color, thick)
 
 
 # Loop until the user clicks the close button.
@@ -119,12 +136,12 @@ while not done:
         pts.append(pt) 
         count += 1
         pygame.draw.rect(screen, GOLD, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
-        print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
-    else:
-        print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
+    #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
+    # else:
+    #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
 
     if len(pts)>1:
-        drawPolylines(BLUE, 1)
+        mode(BLUE, 1)
 
     # Go ahead and update the screen with what we've drawn.
     # This MUST happen after all the other drawing commands.
