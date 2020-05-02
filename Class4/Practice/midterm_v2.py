@@ -7,6 +7,7 @@ import pygame
 from sys import exit
 import numpy as np
 import math
+from scipy.sparse import diags
     
 width = 800
 height = 600
@@ -70,7 +71,6 @@ def draw_lagrange(color='GREEN', thick=1):
 def Hermit(color='GREEN', thick=1):
     # moveto (P1)                            # move pen to startpoint
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
-    # print('pts = ', pts)
 
     for p in range(len(pts)):
         pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
@@ -98,13 +98,52 @@ def Hermit(color='GREEN', thick=1):
             drawPoint(f_x_sl, color=BLUE, thick=1)
 
 
+def Bezier(color='GREEN', thick=1):
+    pygame.draw.rect(screen, WHITE, (0, 0, width, height))
+
+    for p in range(len(pts)):
+        pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
+
+    P = np.array(pts,np.float32)
+    n = len(pts)-1
+    
+    # for t in np.arange(0, 1, 0.01):
+    #     f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+    #     f_x_sl = f_x_sl.astype(int)
+    #     drawPoint(f_x_sl, color=BLUE, thick=1)
+
+    for t in np.arange(0, 1, 0.01):
+        bt = np.zeros(2,np.float32)
+        for i in range(n):
+            bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
+            bt_i *= math.pow(t,i)*math.pow((1-t),n-i)
+            bt += bt_i * P[i]
+            print(bt)
+        drawPoint(bt.astype(int), color=RED, thick=1)
+
+        f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+        f_x_sl = f_x_sl.astype(int)
+        drawPoint(f_x_sl, color=BLUE, thick=1)
+
+def cubic_spline(color='GREEN', thick=1):
+    n = count
+    k = np.array([np.ones(n-1),4*np.ones(n),np.ones(n-1)])
+    offset = [-1,0,1]
+    A = diags(k,offset).toarray()
+    A[0][0] = 2
+    A[n-1][n-1] = 2
+
+    for t in np.arange(0, 1, 0.01):
+        pass
+
 def mode(color='GREEN', thick=1):
     if count < 2:
         return
 
     # draw_lagrange(color, thick)
-    Hermit(color, thick)
-
+    # Hermit(color, thick)
+    # Bezier(color, thick)
+    cubic_spline(color,thick)
 
 # Loop until the user clicks the close button.
 done = False
@@ -112,6 +151,7 @@ pressed = 0
 margin = 6
 old_pressed = 0
 old_button1 = 0
+cubic_spline(BLUE, 1)
 
 while not done:   
     # This limits the while loop to a max of 10 times per second.
@@ -142,7 +182,7 @@ while not done:
 
     if len(pts)>1:
         mode(BLUE, 1)
-
+    break
     # Go ahead and update the screen with what we've drawn.
     # This MUST happen after all the other drawing commands.
     pygame.display.update()
