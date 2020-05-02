@@ -30,6 +30,7 @@ RED = (255, 0, 0)
 GOLD = (178, 151, 0)
 
 pts = [] 
+del_pt = []
 knots = []
 count = 0
 # screen.blit(background, (0,0))
@@ -126,18 +127,37 @@ def Bezier(color='GREEN', thick=1):
         drawPoint(f_x_sl, color=BLUE, thick=1)
 
 def cubic_spline(color='GREEN', thick=1):
-    n = count
+    n = count - 1
     k = np.array([np.ones(n-1),4*np.ones(n),np.ones(n-1)])
     offset = [-1,0,1]
     A = diags(k,offset).toarray()
     A[0][0] = 2
     A[n-1][n-1] = 2
+    
+    r = np.zeros(n,np.float32)
+    for c in range(n):
+        if c < n - 1:
+            if c == 0:
+                r[c] = pts[1][1] - pts[0][1]
+            r[c] = 3*(pts[c+2][1] - pts[c][1])
+    D = np.dot(np.linalg.inv(A), r)
 
-    for t in np.arange(0, 1, 0.01):
-        pass
+    a = b = c = d = Y_t = np.zeros(n,np.float32)
+    for i in range(n):
+        if i < n-1:
+            a[i], b[i], c[i] = pts[i][1], D[i], 3*(pts[i+1][1]-pts[i][1]) - 2*D[i]-D[i+1]
+            d[i] = 2*(pts[i][1]-pts[i+1][1])+D[i]+D[i+1]
+
+        for t in np.arange(0, 1, 0.01):
+            Y_t = a[i] + b[i]*t + c[i]*t*t + d[i]*t*t*t
+            drawPoint(Y_t.astype(int), color=RED, thick=1)
+
+            f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+            f_x_sl = f_x_sl.astype(int)
+            drawPoint(f_x_sl, color=BLUE, thick=1)
 
 def mode(color='GREEN', thick=1):
-    if count < 2:
+    if count < 3:
         return
 
     # draw_lagrange(color, thick)
@@ -151,7 +171,7 @@ pressed = 0
 margin = 6
 old_pressed = 0
 old_button1 = 0
-cubic_spline(BLUE, 1)
+
 
 while not done:   
     # This limits the while loop to a max of 10 times per second.
@@ -160,7 +180,13 @@ while not done:
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pressed = -1            
+            pressed = -1      
+            if event.button == 3: # Mouse Right Click
+                height = 16
+                width = 16
+                x, y = pygame.mouse.get_pos() #Gets the mouse position
+                del_pt = [x,y]
+                pygame.draw.rect(screen, BLACK, (x - width//2, y-height//2,  width, height)) #Draws a black rectangle at the mouse position!      
         elif event.type == pygame.MOUSEBUTTONUP:
             pressed = 1            
         elif event.type == pygame.QUIT:
@@ -177,12 +203,12 @@ while not done:
         count += 1
         pygame.draw.rect(screen, GOLD, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
     #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
-    # else:
-    #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
+    else:
+        print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
+
 
     if len(pts)>1:
         mode(BLUE, 1)
-    break
     # Go ahead and update the screen with what we've drawn.
     # This MUST happen after all the other drawing commands.
     pygame.display.update()

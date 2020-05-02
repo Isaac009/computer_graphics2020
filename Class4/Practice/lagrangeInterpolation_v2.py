@@ -67,20 +67,20 @@ def draw_lagrange(color='GREEN', thick=1):
         drawPoint(f_x_sl, color=BLUE, thick=1)
 
 
-def Hermit():
-    moveto (P1);                            # move pen to startpoint
-    for t in np.arange(0, len(pts)-1, 0.01):
-        s = t / steps;    # scale s to go from 0 to 1
-        h1 =  2*math.pow(s,3) - 3*math.pow(s,2) + 1;          # calculate basis function 1
-        h2 = -2*math.pow(s,3) + 3*math.pow(s,2);              # calculate basis function 2
-        h3 =   math.pow(s,3) - 2*math.pow(s,2) + s;         # calculate basis function 3
-        h4 =   math.pow(s,3) -  math.pow(s,2);              # calculate basis function 4
-        p = h1*P1 +  h2*P2 + h3*T1 + h4*T2; # multiply and sum all funtions
-                                        # together to build the interpolated
-                                        # point along the curve.
+# def Hermit():
+#     moveto (P1);                            # move pen to startpoint
+#     for t in np.arange(0, len(pts)-1, 0.01):
+#         s = t / steps;    # scale s to go from 0 to 1
+#         h1 =  2*math.pow(s,3) - 3*math.pow(s,2) + 1;          # calculate basis function 1
+#         h2 = -2*math.pow(s,3) + 3*math.pow(s,2);              # calculate basis function 2
+#         h3 =   math.pow(s,3) - 2*math.pow(s,2) + s;         # calculate basis function 3
+#         h4 =   math.pow(s,3) -  math.pow(s,2);              # calculate basis function 4
+#         p = h1*P1 +  h2*P2 + h3*T1 + h4*T2; # multiply and sum all funtions
+#                                         # together to build the interpolated
+#                                         # point along the curve.
                     
-        # lineto (p)                            # draw to calculated point on the curve
-        print(p)
+#         # lineto (p)                            # draw to calculated point on the curve
+#         print(p)
 
 def drawPolylines(color='GREEN', thick=1):
     if count < 2:
