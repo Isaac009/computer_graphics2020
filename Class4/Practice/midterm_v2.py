@@ -46,6 +46,7 @@ def drawPoint(pt, color='GREEN', thick=3):
 
 # HW2 implement drawLine with drawPoint
 def draw_lagrange(color='GREEN', thick=1):
+    screen.fill(WHITE)
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
     # print('pts = ', pts)
 
@@ -160,10 +161,10 @@ def mode(color='GREEN', thick=1):
     if count < 3:
         return
 
-    # draw_lagrange(color, thick)
+    draw_lagrange(color, thick)
     # Hermit(color, thick)
     # Bezier(color, thick)
-    cubic_spline(color,thick)
+    # cubic_spline(color,thick)
 
 # Loop until the user clicks the close button.
 done = False
@@ -185,8 +186,11 @@ while not done:
                 height = 16
                 width = 16
                 x, y = pygame.mouse.get_pos() #Gets the mouse position
-                del_pt = [x,y]
-                pygame.draw.rect(screen, BLACK, (x - width//2, y-height//2,  width, height)) #Draws a black rectangle at the mouse position!      
+                print(pts,' == ',del_pt)
+                for index, p in enumerate(pts):
+                    if abs(p[0] - x) <= margin and abs(p[1] - y) <= margin:
+                        pts.remove(pts[index])
+                # pygame.draw.rect(screen, BLACK, (x - width//2, y-height//2,  width, height)) #Draws a black rectangle at the mouse position!      
         elif event.type == pygame.MOUSEBUTTONUP:
             pressed = 1            
         elif event.type == pygame.QUIT:
@@ -198,10 +202,38 @@ while not done:
     x, y = pygame.mouse.get_pos()
     pt = [x, y]
 
+    # if old_pressed == -1 and pressed == 1 and old_button1 == 1 and button1 == 0 :
     if old_pressed == -1 and pressed == 1 and old_button1 == 1 and button1 == 0 :
-        pts.append(pt) 
+        if len(pts) == 0:
+            pts.append(pt)
+        else:
+            print(pts)
+            added = False
+            for index, p in enumerate(pts):
+                if abs(p[0] - pt[0]) <= margin and abs(p[1] - pt[1]) <= margin:
+                    pts.remove(pts[index])
+                    pts.insert(index, pt)
+                    added = True
+                    print("Within")
+            if not added:
+                pts.append(pt) 
+                print("Added")
         count += 1
         pygame.draw.rect(screen, GOLD, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
+    elif old_pressed == 0 and pressed == 0 and old_button1 == 1 and button1 == 1:
+        added = False
+        print("pt: ", pt)
+        for index, p in enumerate(pts):
+            if abs(p[0] - pt[0]) <= margin and abs(p[1] - pt[1]) <= margin:
+                pts.remove(pts[index])
+                pts.insert(index, pt)
+                print(pts)
+                added = True
+                print("Held")
+        # if not added:
+        #     pts.append(pt) 
+        #     print("Added")
+        count += 1
     #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
     else:
         print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
