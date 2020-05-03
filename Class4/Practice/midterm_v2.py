@@ -39,6 +39,8 @@ screen.fill(WHITE)
 # https:#kite.com/python/docs/pygame.Surface.blit
 clock= pygame.time.Clock()
 
+def get_pts(ptz=None):
+    return ptz
 
 def drawPoint(pt, color='GREEN', thick=3):
     pygame.draw.circle(screen, color, pt, thick)
@@ -46,7 +48,7 @@ def drawPoint(pt, color='GREEN', thick=3):
 
 # HW2 implement drawLine with drawPoint
 def draw_lagrange(color='GREEN', thick=1):
-    screen.fill(WHITE)
+    
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
     # print('pts = ', pts)
 
@@ -109,62 +111,73 @@ def Bezier(color='GREEN', thick=1):
     P = np.array(pts,np.float32)
     n = len(pts)-1
     
-    # for t in np.arange(0, 1, 0.01):
-    #     f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-    #     f_x_sl = f_x_sl.astype(int)
-    #     drawPoint(f_x_sl, color=BLUE, thick=1)
-
+    bt = np.zeros(2,np.float32)
     for t in np.arange(0, 1, 0.01):
-        bt = np.zeros(2,np.float32)
         for i in range(n):
-            bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
-            bt_i *= math.pow(t,i)*math.pow((1-t),n-i)
-            bt += bt_i * P[i]
-            print(bt)
+            if i == 0:
+                # bt_i = math.pow((1-t),n)
+                bt = P[i]
+            else:
+                bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
+                bt_i *= math.pow(t,i)*math.pow((1-t),n-i)
+                bt += bt_i * P[i]
+            
+        print("bt(i)", bt)
         drawPoint(bt.astype(int), color=RED, thick=1)
 
         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
         f_x_sl = f_x_sl.astype(int)
         drawPoint(f_x_sl, color=BLUE, thick=1)
 
-def cubic_spline(color='GREEN', thick=1):
-    n = count - 1
+def cubic_spline(color='GREEN', thick=1, pts=None):
+    pygame.draw.rect(screen, WHITE, (0, 0, width, height))
+    for p in range(len(pts)):
+        pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
+    n = len(pts)
     k = np.array([np.ones(n-1),4*np.ones(n),np.ones(n-1)])
     offset = [-1,0,1]
     A = diags(k,offset).toarray()
     A[0][0] = 2
     A[n-1][n-1] = 2
-    
-    r = np.zeros(n,np.float32)
-    for c in range(n):
-        if c < n - 1:
-            if c == 0:
-                r[c] = pts[1][1] - pts[0][1]
-            r[c] = 3*(pts[c+2][1] - pts[c][1])
-    D = np.dot(np.linalg.inv(A), r)
+    pts = np.array(pts,np.float32)
+    if n > 2:
+        r = np.zeros((n,2),np.float32)
+        for c in range(n-1):
+            if c < n - 1:
+                if c == 0:
+                    r[c] = pts[1] - pts[0]
+                r[c] = 3*(pts[c+1] - pts[c])
+        D = np.dot(np.linalg.inv(A), r)
+        # print("r shape: ",r.shape,' D shape: ',D.shape)
+        # print('r: ',r)
+        # print('D: ',D)
+        pts = np.array(pts,np.float32)
+        for i in range(n - 2):
+            if i < n:
+                # a[i], b[i], c[i] = pts[i], D[i], 3*(pts[i+1]-pts[i]) - 2*D[i]-D[i+1]
+                a = pts[i]
+                b = D[i]
+                c1 = np.dot(3,np.subtract(pts[i+1],pts[i]))
+                c2 = np.dot(2,D[i]-D[i+1])
+                c = np.subtract(c1,c2)
+                d = np.dot(2,(pts[i]-pts[i+1])+D[i]+D[i+1])
 
-    a = b = c = d = Y_t = np.zeros(n,np.float32)
-    for i in range(n):
-        if i < n-1:
-            a[i], b[i], c[i] = pts[i][1], D[i], 3*(pts[i+1][1]-pts[i][1]) - 2*D[i]-D[i+1]
-            d[i] = 2*(pts[i][1]-pts[i+1][1])+D[i]+D[i+1]
+            for t in np.arange(0, 1, 0.01):
+                Y_t = a + b*t + c*t*t + d*t*t*t
+                drawPoint(Y_t.astype(int), color=RED, thick=1)
 
-        for t in np.arange(0, 1, 0.01):
-            Y_t = a[i] + b[i]*t + c[i]*t*t + d[i]*t*t*t
-            drawPoint(Y_t.astype(int), color=RED, thick=1)
-
-            f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-            f_x_sl = f_x_sl.astype(int)
-            drawPoint(f_x_sl, color=BLUE, thick=1)
+                f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+                f_x_sl = f_x_sl.astype(int)
+                drawPoint(f_x_sl, color=BLUE, thick=1)
 
 def mode(color='GREEN', thick=1):
     if count < 3:
         return
-
+    screen.fill(WHITE)
     draw_lagrange(color, thick)
     # Hermit(color, thick)
     # Bezier(color, thick)
-    # cubic_spline(color,thick)
+    # cubic_spline(color,thick, pts)
 
 # Loop until the user clicks the close button.
 done = False
@@ -207,7 +220,6 @@ while not done:
         if len(pts) == 0:
             pts.append(pt)
         else:
-            print(pts)
             added = False
             for index, p in enumerate(pts):
                 if abs(p[0] - pt[0]) <= margin and abs(p[1] - pt[1]) <= margin:
@@ -219,25 +231,20 @@ while not done:
                 pts.append(pt) 
                 print("Added")
         count += 1
+        print(pts)
         pygame.draw.rect(screen, GOLD, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
     elif old_pressed == 0 and pressed == 0 and old_button1 == 1 and button1 == 1:
-        added = False
-        print("pt: ", pt)
+        margino = 50
         for index, p in enumerate(pts):
-            if abs(p[0] - pt[0]) <= margin and abs(p[1] - pt[1]) <= margin:
+            if abs(p[0] - pt[0]) <= margino and abs(p[1] - pt[1]) <= margino:
                 pts.remove(pts[index])
                 pts.insert(index, pt)
                 print(pts)
-                added = True
-                print("Held")
-        # if not added:
-        #     pts.append(pt) 
-        #     print("Added")
+        print(pts) 
         count += 1
     #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
-    else:
-        print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
-
+    # else:
+    #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
 
     if len(pts)>1:
         mode(BLUE, 1)
