@@ -28,6 +28,8 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 GOLD = (178, 151, 0)
+bright_red = (255,0,0)
+bright_green = (0,255,0)
 
 pts = [] 
 del_pt = []
@@ -70,37 +72,82 @@ def draw_lagrange(color='GREEN', thick=1):
         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
         f_x_sl = f_x_sl.astype(int)
         drawPoint(f_x_sl, color=BLUE, thick=1)
+    return 1
 
 
 def Hermit(color='GREEN', thick=1):
-    # moveto (P1)                            # move pen to startpoint
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
 
     for p in range(len(pts)):
-        pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
-    
-    T = []
-    for k in range(len(pts)): 
-        if k > 0 and k < len(pts)-2:
-            print(pts[k+1],pts[k-1])
-            T.append(0.2 * (np.array(pts[k+1]) - np.array(pts[k-1])))
-        else:
-            T.append([0,0])
-            
-    for i in range(len(pts)-1):   
-        for t in np.arange(0, len(pts)-1, 0.01):
-            h1 =  2*math.pow(t,3) - 3*math.pow(t,2) + 1          # calculate batit function 1
-            h2 = -2*math.pow(t,3) + 3*math.pow(t,2)              # calculate batit function 2
-            h3 =   math.pow(t,3) - 2*math.pow(t,2) + t         # calculate batit function 3
-            h4 =   math.pow(t,3) -  math.pow(t,2)              # calculate batis function 4
-            
-            p = np.array(pts[i]) * h1 +  np.array(pts[i+1]) * h2 + np.array(T[i]) * h3 + np.array(T[i+1])*h4
-            drawPoint(p.astype(int), color=RED, thick=1)
+        pygame.draw.rect(screen, BLACK, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 6)
+    const=0.5
+    n = len(pts)
+    ptz = np.array(pts, np.float32)
+    for t in np.arange(0, 1, 0.005):
+        h1 = (2 * (t ** 3)) - (3 * (t ** 2)) + 1
+        h2 = (-2 * (t ** 3)) + (3 * (t ** 2))
+        h3 = (t ** 3) - (2 * (t ** 2)) + t
+        h4 = (t ** 3) - (t ** 2)
+        for i in np.arange(0, n-1, 1):
+            if n>2:
+                if i == 0:
+                    tangent2 = ptz[i + 2] - ptz[i]
+                    tangent1 = np.zeros(2, np.float32)
+                    tan_dp2 = np.dot(const, tangent2)
+                elif i > 0 and i < n-2:
+                    tan_pt1 = ptz[i + 1] - ptz[i - 1]
+                    tangent2 = ptz[i + 2] - ptz[i]
+                    tangent1 = np.dot(const,tan_pt1)
+                    tan_dp2 = np.dot(const,tangent2)
+                else:
+                    tan_pt1 = ptz[i + 1] - ptz[i - 1]
+                    tangent1 = np.dot(const, tan_pt1)
+                    tan_dp2 = np.zeros(2, np.float32)
+            else:
+                tangent1 = np.zeros(2, np.float32)
+                tan_dp2 = np.zeros(2, np.float32)
 
-            f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-            f_x_sl = f_x_sl.astype(int)
-            drawPoint(f_x_sl, color=BLUE, thick=1)
+            c_h = np.dot(h1,pts[i]) + np.dot(h2,pts[i+1]) + np.dot(h3,tangent1) + np.dot(h4,tan_dp2)
+            c_h = c_h.astype(int)
+            drawPoint(c_h, color=GREEN, thick=1)
 
+            # Draw point
+            # if t==0:
+            #     pygame.draw.rect(screen, GOLD, (pts[i][0] - margin, pts[i][1] - margin, 2 * margin, 2 * margin), 5)
+            #     if i==n-2:
+            #         pygame.draw.rect(screen, GOLD, (pts[i][0] - margin, pts[i][1] - margin, 2 * margin, 2 * margin), 5)
+            #         pygame.draw.rect(screen, GOLD, (pts[i+1][0] - margin, pts[i+1][1] - margin, 2 * margin, 2 * margin), 5)
+
+    # print(pts)
+    # T = np.array([[0,0]])
+    # for k in range(len(pts)-1): 
+    #     if k > 0 and k < len(pts)-1:
+    #         print(pts[k+1],pts[k-1])
+    #         T = np.append(T, [0.5 * (np.array(pts[k+1]) - np.array(pts[k-1]))], axis=0)
+              
+    #     # else:
+    #     #     np.append([0,0])
+    # print("T: ", T.shape)
+    # ptz = np.array(pts)
+    # print("ptz : ", ptz.shape)
+    # for i in range(len(pts)-2):   
+    #     for t in np.arange(0, len(pts)-1, 0.1):
+    #         h1 =  2*math.pow(t,3) - 3*math.pow(t,2) + 1        # calculate batit function 1
+    #         h2 = -2*math.pow(t,3) + 3*math.pow(t,2)            # calculate batit function 2
+    #         h3 =   math.pow(t,3) - 2*math.pow(t,2) + t         # calculate batit function 3
+    #         h4 =   math.pow(t,3) -  math.pow(t,2)              # calculate batis function 4
+            
+    #         p = ptz[i] * h1 +  ptz[i+1] * h2 + T[i] * h3 + T[i+1]*h4
+    #         drawPoint(p.astype(int), color=RED, thick=1)
+
+    #         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+    #         f_x_sl = f_x_sl.astype(int)
+    #         drawPoint(f_x_sl, color=BLUE, thick=1)
+    # return 2
+
+def nCr(n,r):
+    f = math.factorial
+    return f(n) / (f(r) * f(n-r))
 
 def Bezier(color='GREEN', thick=1):
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
@@ -108,85 +155,125 @@ def Bezier(color='GREEN', thick=1):
     for p in range(len(pts)):
         pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
 
-    P = np.array(pts,np.float32)
-    n = len(pts)-1
-    
-    bt = np.zeros(2,np.float32)
-    for t in np.arange(0, 1, 0.01):
-        for i in range(n):
-            if i == 0:
-                # bt_i = math.pow((1-t),n)
-                bt = P[i]
-            else:
-                bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
-                bt_i *= math.pow(t,i)*math.pow((1-t),n-i)
-                bt += bt_i * P[i]
-            
-        print("bt(i)", bt)
-        drawPoint(bt.astype(int), color=RED, thick=1)
+    pygame.draw.rect(screen, GOLD, (950 - margin, height - 55 - margin, 2 * margin, 2 * margin), 3)
 
-        f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-        f_x_sl = f_x_sl.astype(int)
-        drawPoint(f_x_sl, color=BLUE, thick=1)
-
-def cubic_spline(color='GREEN', thick=1, pts=None):
-    pygame.draw.rect(screen, WHITE, (0, 0, width, height))
-    for p in range(len(pts)):
-        pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
     n = len(pts)
-    k = np.array([np.ones(n-1),4*np.ones(n),np.ones(n-1)])
+    for t in np.arange(0, 1, 0.005):
+        b_z  = np.zeros(2, dtype=np.float32)
+        for i in np.arange(0, n, 1):
+            if n > 2:
+                # bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
+                # bt_i *= math.pow(t,i)*math.pow((1-t),n-1-i)
+                b_z = b_z + np.dot(nCr(n-1, i)*((1-t)**(n-1-i))*(t**i),pts[i])
+                # b_z = b_z + bt_i + pts[i]
+
+            if i < n-1:
+                b_z_sl = np.dot((1-t),pts[i]) + np.dot(t,pts[i+1])
+                b_z_sl = b_z_sl.astype(int)
+                drawPoint(b_z_sl, color=BLUE, thick=1)
+
+            # Draw point
+            if t==0:
+                pygame.draw.rect(screen, GOLD, (pts[i][0] - margin, pts[i][1] - margin, 2 * margin, 2 * margin), 5)
+
+        b_z = b_z.astype(int)
+        drawPoint(b_z, color=RED, thick=1)
+
+    # P = np.array(pts,np.float32)
+    # n = len(pts)-1
+    
+    # bt = np.zeros(2,np.float32)
+    # for t in np.arange(0, 1, 0.01):
+    #     for i in range(n):
+    #         if i == 0:
+    #             # bt_i = math.pow((1-t),n)
+    #             bt = P[i]
+    #         else:
+    #             bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
+    #             bt_i *= math.pow(t,i)*math.pow((1-t),n-i)
+    #             bt += bt_i * P[i]
+            
+    #     print("bt(i)", bt)
+    #     drawPoint(bt.astype(int), color=RED, thick=1)
+
+    #     f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+    #     f_x_sl = f_x_sl.astype(int)
+    #     drawPoint(f_x_sl, color=BLUE, thick=1)
+    # return 3
+
+def cubic_spline(color='GREEN', thick=1):
+    pygame.draw.rect(screen, WHITE, (0, 0, width, height))
+    if pts is None:
+        return
+    for p in range(len(pts)):
+        pygame.draw.rect(screen, BLACK, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
+    n = len(pts)
+    sz = n
+    k = np.array([np.ones(sz-1),4*np.ones(sz),np.ones(sz-1)])
     offset = [-1,0,1]
     A = diags(k,offset).toarray()
     A[0][0] = 2
-    A[n-1][n-1] = 2
-    pts = np.array(pts,np.float32)
+    A[sz-1][sz-1] = 2
+    ptz = np.array(pts,np.float32)
     if n > 2:
         r = np.zeros((n,2),np.float32)
-        for c in range(n-1):
-            if c < n - 1:
-                if c == 0:
-                    r[c] = pts[1] - pts[0]
-                r[c] = 3*(pts[c+1] - pts[c])
-        D = np.dot(np.linalg.inv(A), r)
-        # print("r shape: ",r.shape,' D shape: ',D.shape)
-        # print('r: ',r)
-        # print('D: ',D)
-        pts = np.array(pts,np.float32)
-        for i in range(n - 2):
-            if i < n:
-                # a[i], b[i], c[i] = pts[i], D[i], 3*(pts[i+1]-pts[i]) - 2*D[i]-D[i+1]
-                a = pts[i]
-                b = D[i]
-                c1 = np.dot(3,np.subtract(pts[i+1],pts[i]))
-                c2 = np.dot(2,D[i]-D[i+1])
-                c = np.subtract(c1,c2)
-                d = np.dot(2,(pts[i]-pts[i+1])+D[i]+D[i+1])
+        for c in range(sz):
+            if c == 0: r[c] = ptz[1] - ptz[0]
+            elif c > 0 and c < sz - 1: r[c] = ptz[c+1] - ptz[c-1]
+            else: r[c] = ptz[c] - ptz[c-1]
 
-            for t in np.arange(0, 1, 0.01):
+        D = np.dot(np.linalg.inv(A),3*r)
+
+        for t in np.arange(0, 1, 0.002):
+            for i in range(n-1):
+                a, b =ptz[i], D[i]
+                c=np.dot(3, (ptz[i+1] - ptz[i]))-np.dot(2, D[i]) - D[i+1]
+                d = np.dot(2,(ptz[i]-ptz[i+1]))+D[i]+D[i+1]
                 Y_t = a + b*t + c*t*t + d*t*t*t
                 drawPoint(Y_t.astype(int), color=RED, thick=1)
 
-                f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-                f_x_sl = f_x_sl.astype(int)
-                drawPoint(f_x_sl, color=BLUE, thick=1)
 
 def mode(color='GREEN', thick=1):
     if count < 3:
         return
     screen.fill(WHITE)
-    draw_lagrange(color, thick)
+    # draw_lagrange(color, thick)
     # Hermit(color, thick)
     # Bezier(color, thick)
-    # cubic_spline(color,thick, pts)
+    cubic_spline(color,thick)
 
-# Loop until the user clicks the close button.
+def text_objects(text, font):
+    textSurface = font.render(text, True, BLACK)
+    return textSurface, textSurface.get_rect()
+
+def button(msg,x,y,w,h,ic,ac,action=None):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    # print(click)
+    mode = 0
+    if x+w > mouse[0] > x and y+h > mouse[1] > y:
+        pygame.draw.rect(screen, ac,(x,y,w,h))
+
+        if click[0] == 1 and action != None:
+            mode = action()   
+    else:
+        pygame.draw.rect(screen, ic,(x,y,w,h))
+
+    smallText = pygame.font.SysFont("comicsansms",20)
+    textSurf, textRect = text_objects(msg, smallText)
+    textRect.center = ( (x+(w/2)), (y+(h/2)) )
+    screen.blit(textSurf, textRect)
+    return mode
+
+def test():
+    pass
+# def main_window():
+    # Loop until the user clicks the close button.
 done = False
 pressed = 0
 margin = 6
 old_pressed = 0
 old_button1 = 0
-
-
 while not done:   
     # This limits the while loop to a max of 10 times per second.
     # Leave this out and we will use all CPU we can.
@@ -211,11 +298,15 @@ while not done:
         else:
             pressed = 0
 
+    # button("LAGRANG!",700,20,100,50,GREEN,bright_green,draw_lagrange)
+    # button("BEZIER",700,70,100,50,RED,bright_red,Bezier)
+    # button("HERMIT!",700,120,100,50,GOLD,GOLD,Hermit)
+    # button("CUBIC SPLINE",700,170,100,50,RED,bright_red,cubic_spline)
     button1, button2, button3 = pygame.mouse.get_pressed()
     x, y = pygame.mouse.get_pos()
+    # if x < 700 and y > 170:
     pt = [x, y]
 
-    # if old_pressed == -1 and pressed == 1 and old_button1 == 1 and button1 == 0 :
     if old_pressed == -1 and pressed == 1 and old_button1 == 1 and button1 == 0 :
         if len(pts) == 0:
             pts.append(pt)
@@ -226,13 +317,11 @@ while not done:
                     pts.remove(pts[index])
                     pts.insert(index, pt)
                     added = True
-                    print("Within")
             if not added:
-                pts.append(pt) 
-                print("Added")
+                pts.append(pt)
         count += 1
         print(pts)
-        pygame.draw.rect(screen, GOLD, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
+        pygame.draw.rect(screen, BLACK, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
     elif old_pressed == 0 and pressed == 0 and old_button1 == 1 and button1 == 1:
         margino = 50
         for index, p in enumerate(pts):
@@ -242,10 +331,10 @@ while not done:
                 print(pts)
         print(pts) 
         count += 1
-    #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
+        # print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
     # else:
     #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
-
+    # print("Mode : ",mode)
     if len(pts)>1:
         mode(BLUE, 1)
     # Go ahead and update the screen with what we've drawn.
@@ -255,4 +344,3 @@ while not done:
     old_pressed = pressed
 
 pygame.quit()
-
