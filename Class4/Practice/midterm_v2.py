@@ -8,6 +8,7 @@ from sys import exit
 import numpy as np
 import math
 from scipy.sparse import diags
+from menu import Controller
     
 width = 800
 height = 600
@@ -31,18 +32,12 @@ GOLD = (178, 151, 0)
 bright_red = (255,0,0)
 bright_green = (0,255,0)
 
-pts = [] 
-del_pt = []
-knots = []
-count = 0
+
 # screen.blit(background, (0,0))
 screen.fill(WHITE)
 
 # https:#kite.com/python/docs/pygame.Surface.blit
 clock= pygame.time.Clock()
-
-def get_pts(ptz=None):
-    return ptz
 
 def drawPoint(pt, color='GREEN', thick=3):
     pygame.draw.circle(screen, color, pt, thick)
@@ -72,10 +67,9 @@ def draw_lagrange(color='GREEN', thick=1):
         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
         f_x_sl = f_x_sl.astype(int)
         drawPoint(f_x_sl, color=BLUE, thick=1)
-    return 1
 
 
-def Hermit(color='GREEN', thick=1):
+def Hermite(color='GREEN', thick=1):
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
 
     for p in range(len(pts)):
@@ -143,7 +137,6 @@ def Hermit(color='GREEN', thick=1):
     #         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
     #         f_x_sl = f_x_sl.astype(int)
     #         drawPoint(f_x_sl, color=BLUE, thick=1)
-    # return 2
 
 def nCr(n,r):
     f = math.factorial
@@ -199,7 +192,7 @@ def Bezier(color='GREEN', thick=1):
     #     f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
     #     f_x_sl = f_x_sl.astype(int)
     #     drawPoint(f_x_sl, color=BLUE, thick=1)
-    # return 3
+
 
 def cubic_spline(color='GREEN', thick=1):
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
@@ -231,116 +224,172 @@ def cubic_spline(color='GREEN', thick=1):
                 d = np.dot(2,(ptz[i]-ptz[i+1]))+D[i]+D[i+1]
                 Y_t = a + b*t + c*t*t + d*t*t*t
                 drawPoint(Y_t.astype(int), color=RED, thick=1)
+            f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+            f_x_sl = f_x_sl.astype(int)
+            drawPoint(f_x_sl, color=BLUE, thick=1)
 
-
-def mode(color='GREEN', thick=1):
+def run_mode(color='GREEN', thick=1):
     if count < 3:
         return
     screen.fill(WHITE)
-    # draw_lagrange(color, thick)
-    # Hermit(color, thick)
-    # Bezier(color, thick)
-    cubic_spline(color,thick)
+    if mode == 2:
+        Bezier(color, thick)
+    elif mode == 3:
+        Hermite(color, thick)
+    elif mode == 4:
+        cubic_spline(color,thick)
+    else:
+        draw_lagrange(color, thick)
 
 def text_objects(text, font):
     textSurface = font.render(text, True, BLACK)
     return textSurface, textSurface.get_rect()
 
-def button(msg,x,y,w,h,ic,ac,action=None):
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-    # print(click)
-    mode = 0
-    if x+w > mouse[0] > x and y+h > mouse[1] > y:
-        pygame.draw.rect(screen, ac,(x,y,w,h))
+def main_window(mode_v=0):
+    global pts
+    global count
+    global margin
+    global mode
 
-        if click[0] == 1 and action != None:
-            mode = action()   
-    else:
-        pygame.draw.rect(screen, ic,(x,y,w,h))
+    pts = [] 
+    count = 0
+    del_pt = []
+    knots = []
+    print("Mode set to ")
+    mode = mode_v
 
-    smallText = pygame.font.SysFont("comicsansms",20)
-    textSurf, textRect = text_objects(msg, smallText)
-    textRect.center = ( (x+(w/2)), (y+(h/2)) )
-    screen.blit(textSurf, textRect)
-    return mode
+    done = False
+    pressed = 0
+    margin = 6
+    old_pressed = 0
+    old_button1 = 0
+    while not done:   
+        # This limits the while loop to a max of 10 times per second.
+        # Leave this out and we will use all CPU we can.
+        time_passed = clock.tick(30)
 
-def test():
-    pass
-# def main_window():
-    # Loop until the user clicks the close button.
-done = False
-pressed = 0
-margin = 6
-old_pressed = 0
-old_button1 = 0
-while not done:   
-    # This limits the while loop to a max of 10 times per second.
-    # Leave this out and we will use all CPU we can.
-    time_passed = clock.tick(30)
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pressed = -1      
+                if event.button == 3: # Mouse Right Click
+                    height = 16
+                    width = 16
+                    x, y = pygame.mouse.get_pos() #Gets the mouse position
+                    print(pts,' == ',del_pt)
+                    for index, p in enumerate(pts):
+                        if abs(p[0] - x) <= margin and abs(p[1] - y) <= margin:
+                            pts.remove(pts[index])
+                if event.button == 2:
+                    screen.fill(WHITE)
+                    pts.clear()
+                    count = 0
+                    pygame.display.update()
+                    # old_button1 = button1
+                    # old_pressed = pressed
+                    cntr = Controller()
+                    cntr.show_from_hide()
+                    print("Middle Button!!")
+            elif event.type == pygame.MOUSEBUTTONUP:
+                pressed = 1            
+            elif event.type == pygame.QUIT:
+                done = True
+                screen.fill(WHITE)
+                pts.clear()
+                count = 0
+                pygame.display.update()
+                # old_button1 = button1
+                # old_pressed = pressed
+                cntr = Controller()
+                cntr.show_from_hide()
+                # exit_app()
+                print("Wish to start the app..")
+            else:
+                pressed = 0
 
-    for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pressed = -1      
-            if event.button == 3: # Mouse Right Click
-                height = 16
-                width = 16
-                x, y = pygame.mouse.get_pos() #Gets the mouse position
-                print(pts,' == ',del_pt)
-                for index, p in enumerate(pts):
-                    if abs(p[0] - x) <= margin and abs(p[1] - y) <= margin:
-                        pts.remove(pts[index])
-                # pygame.draw.rect(screen, BLACK, (x - width//2, y-height//2,  width, height)) #Draws a black rectangle at the mouse position!      
-        elif event.type == pygame.MOUSEBUTTONUP:
-            pressed = 1            
-        elif event.type == pygame.QUIT:
-            done = True
-        else:
-            pressed = 0
+        # mode = draw_buttons()
+        button1, button2, button3 = pygame.mouse.get_pressed()
+        x, y = pygame.mouse.get_pos()
+        # if x < 700 and y > 170:
+        pt = [x, y]
 
-    # button("LAGRANG!",700,20,100,50,GREEN,bright_green,draw_lagrange)
-    # button("BEZIER",700,70,100,50,RED,bright_red,Bezier)
-    # button("HERMIT!",700,120,100,50,GOLD,GOLD,Hermit)
-    # button("CUBIC SPLINE",700,170,100,50,RED,bright_red,cubic_spline)
-    button1, button2, button3 = pygame.mouse.get_pressed()
-    x, y = pygame.mouse.get_pos()
-    # if x < 700 and y > 170:
-    pt = [x, y]
-
-    if old_pressed == -1 and pressed == 1 and old_button1 == 1 and button1 == 0 :
-        if len(pts) == 0:
-            pts.append(pt)
-        else:
-            added = False
-            for index, p in enumerate(pts):
-                if abs(p[0] - pt[0]) <= margin and abs(p[1] - pt[1]) <= margin:
-                    pts.remove(pts[index])
-                    pts.insert(index, pt)
-                    added = True
-            if not added:
-                pts.append(pt)
-        count += 1
-        print(pts)
-        pygame.draw.rect(screen, BLACK, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
-    elif old_pressed == 0 and pressed == 0 and old_button1 == 1 and button1 == 1:
-        margino = 50
-        for index, p in enumerate(pts):
-            if abs(p[0] - pt[0]) <= margino and abs(p[1] - pt[1]) <= margino:
-                pts.remove(pts[index])
-                pts.insert(index, pt)
+        
+        if old_pressed == -1 and pressed == 1 and old_button1 == 1 and button1 == 0 :
+            if x < 650 and y > 180:
+                print("Mode: ", mode)
+                if len(pts) == 0:
+                    pts.append(pt)
+                else:
+                    added = False
+                    for index, p in enumerate(pts):
+                        if abs(p[0] - pt[0]) <= margin and abs(p[1] - pt[1]) <= margin:
+                            pts.remove(pts[index])
+                            pts.insert(index, pt)
+                            added = True
+                    if not added:
+                        pts.append(pt)
+                count += 1
                 print(pts)
-        print(pts) 
-        count += 1
-        # print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
-    # else:
-    #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
-    # print("Mode : ",mode)
-    if len(pts)>1:
-        mode(BLUE, 1)
-    # Go ahead and update the screen with what we've drawn.
-    # This MUST happen after all the other drawing commands.
-    pygame.display.update()
-    old_button1 = button1
-    old_pressed = pressed
+                pygame.draw.rect(screen, BLACK, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
+        elif old_pressed == 0 and pressed == 0 and old_button1 == 1 and button1 == 1:
+            if x < 650 and y > 180:
+                print("Mode: ", mode)
+                margino = 50
+                for index, p in enumerate(pts):
+                    if abs(p[0] - pt[0]) <= margino and abs(p[1] - pt[1]) <= margino:
+                        pts.remove(pts[index])
+                        pts.insert(index, pt)
+                        print(pts)
+                print(pts) 
+                count += 1
+            # print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
+        # else:
+        #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
+        # print("Mode : ",mode)
+        if len(pts)>1:
+            run_mode(BLUE, 1)
+        # Go ahead and update the screen with what we've drawn.
+        # This MUST happen after all the other drawing commands.
+        pygame.display.update()
+        old_button1 = button1
+        old_pressed = pressed
 
-pygame.quit()
+    
+# app = QApplication(sys.argv)
+
+# def start():
+#     from menu import Example
+#     global app
+    
+#     ex = Example()
+#     ex.show()
+#     app.exec_()
+    # sys.exit(app.exec_())
+
+# def restart():  # function connected to when restart button clicked  
+
+# def exit_app():
+#     from menu import Example 
+#     ex = Example()
+#     app.exit(Example.EXIT_CODE_REBOOT)
+#     main()
+    # ex.restart()
+    # app.closeAllWindows()
+    # sys.exit(app.exec_())
+    # app.quit()
+    # start()
+    # app = QApplication(sys.argv)
+    # ex = Example()
+    # sys.exit(app.exec_())
+# def main():
+#     from menu import Example 
+#     currentExitCode = Example.EXIT_CODE_REBOOT
+#     while currentExitCode == Example.EXIT_CODE_REBOOT:
+#         a = QApplication(sys.argv)
+#         w = Example()
+#         w.show()
+#         currentExitCode = a.exec_()
+#         a = None 
+
+# if __name__ == '__main__':
+#     main()
+    
