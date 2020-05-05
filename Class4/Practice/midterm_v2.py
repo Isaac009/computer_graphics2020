@@ -49,7 +49,7 @@ def draw_lagrange(color='GREEN', thick=1):
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
 
     for p in range(len(pts)):
-        pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
+        pygame.draw.rect(screen, GREEN, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
 
     for t in np.arange(0, len(pts)-1, 0.01):
         f_x = np.zeros(2, dtype=np.float32)
@@ -61,11 +61,11 @@ def draw_lagrange(color='GREEN', thick=1):
                     den = den * (i - j)
             f_x = f_x + np.dot(pts[i], num/den)
         f_x = f_x.astype(int)
-        drawPoint(f_x, color=RED, thick=1)
+        drawPoint(f_x, color=GREEN, thick=1)
 
         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
         f_x_sl = f_x_sl.astype(int)
-        drawPoint(f_x_sl, color=BLUE, thick=1)
+        drawPoint(f_x_sl, color=RED, thick=1)
 
 
 def Hermite(color='GREEN', thick=1):
@@ -103,6 +103,10 @@ def Hermite(color='GREEN', thick=1):
             c_h = np.dot(h1,pts[i]) + np.dot(h2,pts[i+1]) + np.dot(h3,tangent1) + np.dot(h4,tan_dp2)
             c_h = c_h.astype(int)
             drawPoint(c_h, color=GREEN, thick=1)
+
+            # f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+            # f_x_sl = f_x_sl.astype(int)
+            # drawPoint(f_x_sl, color=BLUE, thick=1)
 
 def nCr(n,r):
     f = math.factorial
@@ -161,9 +165,9 @@ def cubic_spline(color='GREEN', thick=1):
                 d = np.dot(2,(ptz[i]-ptz[i+1]))+D[i]+D[i+1]
                 Y_t = a + b*t + c*t*t + d*t*t*t
                 drawPoint(Y_t.astype(int), color=RED, thick=1)
-            outline_points = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-            outline_points = outline_points.astype(int)
-            drawPoint(outline_points, color=BLUE, thick=1)
+                # outline_points = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+                # outline_points = outline_points.astype(int)
+                # drawPoint(outline_points, color=BLUE, thick=1)
 
 def run_mode(color='GREEN', thick=1):
     if count < 3:
@@ -212,10 +216,12 @@ def main_window(mode_v=0):
                     height = 16
                     width = 16
                     x, y = pygame.mouse.get_pos() #Gets the mouse position
-                    print(pts,' == ',del_pt)
                     for index, p in enumerate(pts):
                         if abs(p[0] - x) <= margin and abs(p[1] - y) <= margin:
+                            del_pt = pts[index]
                             pts.remove(pts[index])
+                            print("Deleted Point: ",del_pt)
+
                 if event.button == 2:
                     done = True
                     screen.fill(WHITE)
@@ -234,10 +240,8 @@ def main_window(mode_v=0):
             else:
                 pressed = 0
 
-        # mode = draw_buttons()
         button1, button2, button3 = pygame.mouse.get_pressed()
         x, y = pygame.mouse.get_pos()
-        # if x < 700 and y > 170:
         pt = [x, y]
 
         
