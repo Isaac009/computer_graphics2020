@@ -61,7 +61,7 @@ def draw_lagrange(color='GREEN', thick=1):
                     den = den * (i - j)
             f_x = f_x + np.dot(pts[i], num/den)
         f_x = f_x.astype(int)
-        drawPoint(f_x, color=GREEN, thick=1)
+        drawPoint(f_x, color=BLUE, thick=1)
 
         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
         f_x_sl = f_x_sl.astype(int)
@@ -104,13 +104,9 @@ def Hermite(color='GREEN', thick=1):
             c_h = c_h.astype(int)
             drawPoint(c_h, color=GREEN, thick=1)
 
-            # f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-            # f_x_sl = f_x_sl.astype(int)
-            # drawPoint(f_x_sl, color=BLUE, thick=1)
 
-def nCr(n,r):
-    f = math.factorial
-    return f(n) / (f(r) * f(n-r))
+def nCombination(n,r):
+    return math.factorial(n) / (math.factorial(r) * math.factorial(n-r))
 
 def Bezier(color='GREEN', thick=1):
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
@@ -125,7 +121,7 @@ def Bezier(color='GREEN', thick=1):
         b_z  = np.zeros(2, dtype=np.float32)
         for i in range(n):
             if n > 2:
-                b_z = b_z + np.dot(nCr(n-1, i)*((1-t)**(n-1-i))*(t**i),pts[i])
+                b_z = b_z + np.dot(nCombination(n-1, i)*((1-t)**(n-1-i))*(t**i),pts[i])
             if i < n-1:
                 b_z_sl = np.dot((1-t),pts[i]) + np.dot(t,pts[i+1])
                 b_z_sl = b_z_sl.astype(int)
@@ -165,9 +161,6 @@ def cubic_spline(color='GREEN', thick=1):
                 d = np.dot(2,(ptz[i]-ptz[i+1]))+D[i]+D[i+1]
                 Y_t = a + b*t + c*t*t + d*t*t*t
                 drawPoint(Y_t.astype(int), color=RED, thick=1)
-                # outline_points = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
-                # outline_points = outline_points.astype(int)
-                # drawPoint(outline_points, color=BLUE, thick=1)
 
 def run_mode(color='GREEN', thick=1):
     if count < 3:

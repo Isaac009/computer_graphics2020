@@ -15,20 +15,20 @@ class MainWindow(QtWidgets.QWidget):
         btn_bezier = QtWidgets.QPushButton("Bezier", self)
         btn_bezier.move(150, 50)
 
-        btn3 = QtWidgets.QPushButton("Hermite", self)
-        btn3.move(30, 110)
+        btn_hermite = QtWidgets.QPushButton("Hermite", self)
+        btn_hermite.move(30, 110)
 
-        btn4 = QtWidgets.QPushButton("Cubic Spline", self)
-        btn4.move(150, 110)
+        btn_cubic_spline = QtWidgets.QPushButton("Cubic Spline", self)
+        btn_cubic_spline.move(150, 110)
 
-        btn5 = QtWidgets.QPushButton("Close", self)
-        btn5.move(150, 160)
+        btn_close = QtWidgets.QPushButton("Close", self)
+        btn_close.move(150, 160)
       
         btn_lagrange.clicked.connect(self.buttonClicked)            
         btn_bezier.clicked.connect(self.buttonClicked)
-        btn3.clicked.connect(self.buttonClicked)            
-        btn4.clicked.connect(self.buttonClicked)
-        btn5.clicked.connect(self.buttonClicked)
+        btn_hermite.clicked.connect(self.buttonClicked)            
+        btn_cubic_spline.clicked.connect(self.buttonClicked)
+        btn_close.clicked.connect(self.buttonClicked)
         
         # self.statusBar()
         
@@ -80,20 +80,20 @@ class MenuClass(QtWidgets.QWidget):
         btn_bezier = QtWidgets.QPushButton("Bezier", self)
         btn_bezier.move(150, 50)
 
-        btn3 = QtWidgets.QPushButton("Hermite", self)
-        btn3.move(30, 110)
+        btn_hermite = QtWidgets.QPushButton("Hermite", self)
+        btn_hermite.move(30, 110)
 
-        btn4 = QtWidgets.QPushButton("Cubic Spline", self)
-        btn4.move(150, 110)
+        btn_cubic_spline = QtWidgets.QPushButton("Cubic Spline", self)
+        btn_cubic_spline.move(150, 110)
       
-        btn5 = QtWidgets.QPushButton("Close", self)
-        btn5.move(150, 160)
+        btn_close = QtWidgets.QPushButton("Close", self)
+        btn_close.move(150, 160)
       
         btn_lagrange.clicked.connect(self.buttonClicked)            
         btn_bezier.clicked.connect(self.buttonClicked)
-        btn3.clicked.connect(self.buttonClicked)            
-        btn4.clicked.connect(self.buttonClicked)
-        btn5.clicked.connect(self.buttonClicked)
+        btn_hermite.clicked.connect(self.buttonClicked)            
+        btn_cubic_spline.clicked.connect(self.buttonClicked)
+        btn_close.clicked.connect(self.buttonClicked)
         
         # self.statusBar()
         
