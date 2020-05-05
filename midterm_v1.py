@@ -174,9 +174,9 @@ def mode(color='GREEN', thick=1):
     if count < 3:
         return
     screen.fill(WHITE)
-    draw_lagrange(color, thick)
+    # draw_lagrange(color, thick)
     # Hermit(color, thick)
-    # Bezier(color, thick)
+    Bezier(color, thick)
     # cubic_spline(color,thick, pts)
 
 # Loop until the user clicks the close button.

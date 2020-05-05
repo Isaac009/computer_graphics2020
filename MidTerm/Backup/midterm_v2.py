@@ -47,6 +47,7 @@ def drawPoint(pt, color='GREEN', thick=3):
 def draw_lagrange(color='GREEN', thick=1):
     
     pygame.draw.rect(screen, WHITE, (0, 0, width, height))
+    # print('pts = ', pts)
 
     for p in range(len(pts)):
         pygame.draw.rect(screen, GOLD, (pts[p][0] - margin, pts[p][1] - margin, 2 * margin, 2 * margin), 5)
@@ -104,6 +105,39 @@ def Hermite(color='GREEN', thick=1):
             c_h = c_h.astype(int)
             drawPoint(c_h, color=GREEN, thick=1)
 
+            # Draw point
+            # if t==0:
+            #     pygame.draw.rect(screen, GOLD, (pts[i][0] - margin, pts[i][1] - margin, 2 * margin, 2 * margin), 5)
+            #     if i==n-2:
+            #         pygame.draw.rect(screen, GOLD, (pts[i][0] - margin, pts[i][1] - margin, 2 * margin, 2 * margin), 5)
+            #         pygame.draw.rect(screen, GOLD, (pts[i+1][0] - margin, pts[i+1][1] - margin, 2 * margin, 2 * margin), 5)
+
+    # print(pts)
+    # T = np.array([[0,0]])
+    # for k in range(len(pts)-1): 
+    #     if k > 0 and k < len(pts)-1:
+    #         print(pts[k+1],pts[k-1])
+    #         T = np.append(T, [0.5 * (np.array(pts[k+1]) - np.array(pts[k-1]))], axis=0)
+              
+    #     # else:
+    #     #     np.append([0,0])
+    # print("T: ", T.shape)
+    # ptz = np.array(pts)
+    # print("ptz : ", ptz.shape)
+    # for i in range(len(pts)-2):   
+    #     for t in np.arange(0, len(pts)-1, 0.1):
+    #         h1 =  2*math.pow(t,3) - 3*math.pow(t,2) + 1        # calculate batit function 1
+    #         h2 = -2*math.pow(t,3) + 3*math.pow(t,2)            # calculate batit function 2
+    #         h3 =   math.pow(t,3) - 2*math.pow(t,2) + t         # calculate batit function 3
+    #         h4 =   math.pow(t,3) -  math.pow(t,2)              # calculate batis function 4
+            
+    #         p = ptz[i] * h1 +  ptz[i+1] * h2 + T[i] * h3 + T[i+1]*h4
+    #         drawPoint(p.astype(int), color=RED, thick=1)
+
+    #         f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+    #         f_x_sl = f_x_sl.astype(int)
+    #         drawPoint(f_x_sl, color=BLUE, thick=1)
+
 def nCr(n,r):
     f = math.factorial
     return f(n) / (f(r) * f(n-r))
@@ -121,14 +155,44 @@ def Bezier(color='GREEN', thick=1):
         b_z  = np.zeros(2, dtype=np.float32)
         for i in range(n):
             if n > 2:
+                # bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
+                # bt_i = bt_i * math.pow(t,i)*math.pow((1-t),n-1-i)
                 b_z = b_z + np.dot(nCr(n-1, i)*((1-t)**(n-1-i))*(t**i),pts[i])
+                # b_z = b_z + bt_i + pts[i]
+                # print(b_z)
+
             if i < n-1:
                 b_z_sl = np.dot((1-t),pts[i]) + np.dot(t,pts[i+1])
                 b_z_sl = b_z_sl.astype(int)
                 drawPoint(b_z_sl, color=BLUE, thick=1)
 
+            # Draw point
+            # if t==0:
+            #     pygame.draw.rect(screen, GOLD, (pts[i][0] - margin, pts[i][1] - margin, 2 * margin, 2 * margin), 5)
+
         b_z = b_z.astype(int)
         drawPoint(b_z, color=RED, thick=1)
+
+    # P = np.array(pts,np.float32)
+    # n = len(pts)-1
+    
+    # bt = np.zeros(2,np.float32)
+    # for t in np.arange(0, 1, 0.01):
+    #     for i in range(n):
+    #         if i == 0:
+    #             # bt_i = math.pow((1-t),n)
+    #             bt = P[i]
+    #         else:
+    #             bt_i = math.factorial(n)/(math.factorial(i)*math.factorial(n - i))
+    #             bt_i *= math.pow(t,i)*math.pow((1-t),n-i)
+    #             bt += bt_i * P[i]
+            
+    #     print("bt(i)", bt)
+    #     drawPoint(bt.astype(int), color=RED, thick=1)
+
+    #     f_x_sl = np.dot(-t+math.floor(t), pts[math.floor(t)]) + pts[math.floor(t)] + np.dot(t-math.floor(t), pts[math.ceil(t)])
+    #     f_x_sl = f_x_sl.astype(int)
+    #     drawPoint(f_x_sl, color=BLUE, thick=1)
 
 
 def cubic_spline(color='GREEN', thick=1):
@@ -230,6 +294,14 @@ def main_window(mode_v=0):
                 pressed = 1            
             elif event.type == pygame.QUIT:
                 done = True
+                screen.fill(WHITE)
+                pts.clear()
+                count = 0
+                print("Reset Control Points List...")
+                pygame.display.update()
+                cntr = Controller()
+                cntr.show_main()
+                # exit_app()
                 print("***** Select Any Operation!!! ******")
             else:
                 pressed = 0
@@ -267,12 +339,57 @@ def main_window(mode_v=0):
                         print(pts)
                 print(pts) 
                 count += 1
-        
+            # print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
+        # else:
+        #     print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
+        # print("Mode : ",mode)
+        # if mode == 5: # Quit
+        #     pygame.quit()
         if len(pts)>1:
             run_mode(BLUE, 1)
-
+        # Go ahead and update the screen with what we've drawn.
+        # This MUST happen after all the other drawing commands.
         pygame.display.update()
         old_button1 = button1
         old_pressed = pressed
-        if mode == 5: # Quit
-            break
+
+    
+# app = QApplication(sys.argv)
+
+# def start():
+#     from menu import Example
+#     global app
+    
+#     ex = Example()
+#     ex.show()
+#     app.exec_()
+    # sys.exit(app.exec_())
+
+# def restart():  # function connected to when restart button clicked  
+
+# def exit_app():
+#     from menu import Example 
+#     ex = Example()
+#     app.exit(Example.EXIT_CODE_REBOOT)
+#     main()
+    # ex.restart()
+    # app.closeAllWindows()
+    # sys.exit(app.exec_())
+    # app.quit()
+    # start()
+    # app = QApplication(sys.argv)
+    # ex = Example()
+    # sys.exit(app.exec_())
+# def main():
+#     from menu import Example 
+#     currentExitCode = Example.EXIT_CODE_REBOOT
+#     while currentExitCode == Example.EXIT_CODE_REBOOT:
+#         a = QApplication(sys.argv)
+#         w = Example()
+#         w.show()
+#         currentExitCode = a.exec_()
+#         a = None 
+
+# if __name__ == '__main__':
+#     main()
+    
